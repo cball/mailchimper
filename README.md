@@ -19,3 +19,6 @@ Unfortunately the ID shown in the web URL is different and can't be used.
 ```javascript
 $.post('<your url>/subscribe', { id: <your list id>, email: <email to subscribe> });
 ```
+
+### Healthcheck
+This app also has a healthcheck route which can be pinged periodically to keep Heroku Dynos alive.
