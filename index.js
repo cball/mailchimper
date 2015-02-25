@@ -1,4 +1,14 @@
-// set variables for environment
+/*
+  Mailchimper: a simple Express app to subscribe users to an email list
+  based on a set of whitelisted domains.
+
+  Currently only grabs email.
+
+  Set these required ENV variables and you'll be on your way:
+    MAILCHIMP_KEY: key from your Mailchimp account page
+    ALLOWED_DOMAINS: comma separated list of domains (example.com, foo.org)
+    USE_DOUBLE_OPTIN:  optional flag to control whether a double opt-in confirmation message is sent, defaults to true
+*/
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
@@ -15,7 +25,7 @@ try {
   console.log(error.message);
 }
 
-// Grab list id from here:
+// Grab list id from this api call:
 // api.call('lists', 'list', function(error, data) {
 //   if (error) {
 //     console.log(error.message);
@@ -42,10 +52,9 @@ app.post('/subscribe', function(req, res) {
     // the mailchimp list id from above
     id: req.body.id,
     email: { email: req.body.email },
-    double_optin: false,
-    send_welcome: true
+    double_optin: shouldUseDoubleOptin(),
+    send_welcome: !shouldUseDoubleOptin(),
   }
-  console.log(params)
 
   if (_.isEmpty(params.id) || _.isEmpty(params.email.email)) {
     console.log('id and email are required.');
@@ -63,6 +72,13 @@ app.post('/subscribe', function(req, res) {
     }
   });
 });
+
+var shouldUseDoubleOptin = function() {
+  var useIt = process.env.USE_DOUBLE_OPTIN;
+  if (typeof(useIt) === 'undefined') { return true; }
+
+  return useIt.toString() === 'true';
+}
 
 var isValidDomain = function(req) {
   var hostname = parsedReferrer(req).hostname;
