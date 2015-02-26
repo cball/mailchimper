@@ -83,7 +83,10 @@ var shouldUseDoubleOptin = function() {
 var isValidDomain = function(req) {
   var hostname = parsedReferrer(req).hostname;
   var valid = _.contains(allowedDomains, hostname);
-  console.log(hostname + ' is allowed to send!');
+
+  if (valid) {
+    console.log(hostname + ' is allowed to send!');
+  }
 
   return valid;
 };
