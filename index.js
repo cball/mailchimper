@@ -17,7 +17,7 @@ var url = require('url');
 var MailChimpAPI = require('mailchimp').MailChimpAPI;
 var allowedDomains = (process.env.ALLOWED_DOMAINS || '').split(/,\s*/);
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 try {
   var api = new MailChimpAPI(process.env.MAILCHIMP_KEY, { version : '2.0' });
@@ -51,7 +51,10 @@ app.post('/subscribe', function(req, res) {
   var params = {
     // the mailchimp list id from above
     id: req.body.id,
-    email: { email: req.body.email },
+    email: {
+      email: req.body.email
+    },
+    merge_vars: mergeVarsFromParams(req.body),
     double_optin: shouldUseDoubleOptin(),
     send_welcome: !shouldUseDoubleOptin(),
   }
@@ -98,6 +101,19 @@ var parsedReferrer = function(req) {
 var domainForHeader = function(req) {
   var parsedUrl = parsedReferrer(req);
   return parsedUrl.protocol + '//' + parsedUrl.host;
+}
+
+var mergeVarsFromParams = function(params) {
+  var mergeVars = params.mergeVars || {};
+  var name = mergeVars.FNAME || '';
+  var splitName = name.split(/\s+/);
+
+  if (_.isEmpty(mergeVars.LNAME) && splitName.length > 1) {
+    mergeVars.FNAME = _.first(splitName);
+    mergeVars.LNAME = _.last(splitName);
+  }
+
+  return mergeVars;
 }
 
 app.listen(process.env.PORT || 4000);
